@@ -24,16 +24,18 @@ class DrinkItem(MenuItem):
         return f"{super().get_info()}, Size: {self.size}"
 
 class Order:
-    def __init__(self, order_id):
+    def __init__(self, order_id, currency="USD"):
         self.order_id = order_id
         self.items = []
         self.status = "pending"
+        self.currency = currency
+        self.exchange_rate = 36.57 if currency == "UAH" else 1.0  # Example rate for UAH to USD
 
     def add_item(self, item):
         self.items.append(item)
 
     def calculate_total(self):
-        return sum(item.price for item in self.items)
+        return sum(item.price for item in self.items) * self.exchange_rate
 
     def set_status(self, status):
         if status in ["pending", "preparing", "ready", "completed"]:
@@ -46,28 +48,44 @@ class Order:
         print("Items:")
         for item in self.items:
             print(f"- {item.get_info()}")
-        print(f"Total: ${self.calculate_total():.2f}")
+        total = self.calculate_total()
+        currency_symbol = "₴" if self.currency == "UAH" else "$"
+        print(f"Total: {currency_symbol}{total:.2f}")
         print(f"Status: {self.status}")
 
-
+        
 pizza = FoodItem("Pizza", 8.99, 700)
 burger = FoodItem("Burger", 5.49, 500)
 coffee = DrinkItem("Coffee", 2.99, "M")
 tea = DrinkItem("Tea", 1.99, "S")
 
 
-order = Order(order_id=1)
+currency = input("In which currency would you like the order to be displayed? (USD or UAH): ").strip().upper()
+if currency not in ["USD", "UAH"]:
+    print("Invalid currency. Defaulting to USD.")
+    currency = "USD"
 
 
-order.add_item(pizza)
-order.add_item(burger)
-order.add_item(coffee)
-order.add_item(tea)
+order1 = Order(order_id=1, currency=currency)
+order2 = Order(order_id=2, currency=currency)
+
+order1.add_item(pizza)
+order1.add_item(coffee)
+
+order2.add_item(burger)
+order2.add_item(tea)
+
+print("\nOrder 1:")
+order1.display_order()
+
+print("\nOrder 2:")
+order2.display_order()
 
 
-order.display_order()
+order1.set_status("preparing")
+print("\nUpdated Order 1 Status:")
+order1.display_order()
 
-
-order.set_status("preparing")
-print("\nUpdated Order Status:")
-order.display_order()
+order2.set_status("ready")
+print("\nUpdated Order 2 Status:")
+order2.display_order()
